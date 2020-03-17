@@ -1,7 +1,7 @@
 function X=Riccati(A,G,Q)
 %RICCATI  Solves an algebraic Riccati equation
-%   X = Riccati(A,G,Q) solves the algebraic Riccati equation of the form:
-%       A'*X + X*A' - X*G*X + Q = 0, where X is symmetric.
+% X = Riccati(A,G,Q) solves the algebraic Riccati equation of the form:
+% A'*X + X*A' - X*G*X + Q = 0, where X is symmetric.
 
 n=size(A,1);
 
