@@ -1,4 +1,5 @@
-// Copyright 2015 by Jonathan W. Valvano, valvano@mail.utexas.edu
+//Motor Control for ACC in RC Car
+//Author: Nam Anh Mai
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -32,10 +33,11 @@ int main(void)
     volatile uint32_t ui32PWMClock;
     volatile uint32_t ui32Adjust;
     volatile double duty_cycle;
+    volatile double pulse_width;
 
     //Calculation to produce pulse width of 1.5ms
-    //pulse width = (1/PWM_FREQUENCY)/1000 * ui32Adjust
-    ui32Adjust = 83;
+//    ui32Adjust = 83;
+    pulse_width = (1/PWM_FREQUENCY)/1000 * ui32Adjust;
     duty_cycle = (1000-ui32Adjust)/10;
 
     SysCtlClockSet(SYSCTL_SYSDIV_5|SYSCTL_USE_PLL|SYSCTL_OSC_MAIN|SYSCTL_XTAL_16MHZ);
@@ -86,7 +88,7 @@ int main(void)
     IntEnable(INT_UART0); //enable UART interrupt
     // select receiver interrupts (RX) and receiver timeout interrupts (RT)
     UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
-    printString("Enter motor speed:\n\r");
+
 
     while(1)
     {
@@ -95,25 +97,29 @@ int main(void)
         // ui32Adjust: 83 -> 1.5ms, 111 -> 2ms, 56 -> 1ms
         //Check if SW1 is pressed to decrease pulse width
 //        printString("Enter motor speed:\n\r");
-        if(GPIOPinRead(GPIO_PORTF_BASE,GPIO_PIN_4)==0x00)
-        {
-            ui32Adjust--;
-            if (ui32Adjust < 56)
-            {
-                ui32Adjust = 56; //1ms
-            }
-            PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
-        }
-        //Check if SW2 is pressed to increase pulse width
-        if(GPIOPinRead(GPIO_PORTF_BASE,GPIO_PIN_0)==0x00)
-        {
-            ui32Adjust++;
-            if (ui32Adjust > 111)
-            {
-                    ui32Adjust = 111; //2ms
-            }
-            PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
-        }
+//        if(GPIOPinRead(GPIO_PORTF_BASE,GPIO_PIN_4)==0x00)
+//        {
+//            ui32Adjust--;
+//            if (ui32Adjust < 56)
+//            {
+//                ui32Adjust = 56; //1ms
+//            }
+//            PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
+//        }
+//        //Check if SW2 is pressed to increase pulse width
+//        if(GPIOPinRead(GPIO_PORTF_BASE,GPIO_PIN_0)==0x00)
+//        {
+//            ui32Adjust++;
+//            if (ui32Adjust > 111)
+//            {
+//                    ui32Adjust = 111; //2ms
+//            }
+//            PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
+//        }
+        printString("Enter motor speed:\n\r");
+        ui32Adjust = UART_InUDec();
+        printString("\n\r");
+        PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
         SysCtlDelay(1);
     }
 }
@@ -182,6 +188,8 @@ void UART_OutUDec(uint32_t n)
     }
     UART_OutChar(n+'0'); /* n is between 0 and 9 */
 }
+
+void
 
 void UART_Init(void)
 {
