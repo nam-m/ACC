@@ -95,31 +95,13 @@ int main(void)
 //        UART_Init();
 //        PortF_Init();
         // ui32Adjust: 83 -> 1.5ms, 111 -> 2ms, 56 -> 1ms
-        //Check if SW1 is pressed to decrease pulse width
-//        printString("Enter motor speed:\n\r");
-//        if(GPIOPinRead(GPIO_PORTF_BASE,GPIO_PIN_4)==0x00)
-//        {
-//            ui32Adjust--;
-//            if (ui32Adjust < 56)
-//            {
-//                ui32Adjust = 56; //1ms
-//            }
-//            PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
-//        }
-//        //Check if SW2 is pressed to increase pulse width
-//        if(GPIOPinRead(GPIO_PORTF_BASE,GPIO_PIN_0)==0x00)
-//        {
-//            ui32Adjust++;
-//            if (ui32Adjust > 111)
-//            {
-//                    ui32Adjust = 111; //2ms
-//            }
-//            PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
-//        }
-        printString("Enter motor speed:\n\r");
+        printString("Enter motor position:\n\r");
         ui32Adjust = UART_InUDec();
         printString("\n\r");
-        PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
+        if ((ui32Adjust > 111) || (ui32Adjust < 83))
+            printString("Input needs to be larger than 83 and smaller than 111\n\r");
+        else
+            PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
         SysCtlDelay(1);
     }
 }
@@ -188,8 +170,6 @@ void UART_OutUDec(uint32_t n)
     }
     UART_OutChar(n+'0'); /* n is between 0 and 9 */
 }
-
-void
 
 void UART_Init(void)
 {
