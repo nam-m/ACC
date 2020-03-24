@@ -89,7 +89,6 @@ int main(void)
     // select receiver interrupts (RX) and receiver timeout interrupts (RT)
     UARTIntEnable(UART0_BASE, UART_INT_RX | UART_INT_RT);
 
-
     while(1)
     {
 //        UART_Init();
@@ -98,8 +97,8 @@ int main(void)
         printString("Enter motor position:\n\r");
         ui32Adjust = UART_InUDec();
         printString("\n\r");
-        if ((ui32Adjust > 111) || (ui32Adjust < 83))
-            printString("Input needs to be larger than 83 and smaller than 111\n\r");
+        if ((ui32Adjust > 111) || (ui32Adjust < 56))
+            printString("Input needs to be larger than 56 and smaller than 111\n\r");
         else
             PWMPulseWidthSet(PWM1_BASE, PWM_OUT_0, ui32Adjust * ui32Load / 1000);
         SysCtlDelay(1);
