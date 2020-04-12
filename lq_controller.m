@@ -4,15 +4,16 @@ clear all
 close all
 clc
 %% Car inputs
-t = 0:0.1:5; % time interval
+t = 0:0.1:20; % time interval
 N = length(t);
 t_hw = 2; % time head-way between lead and host vehicle
 e0 = 1e-5;
+
 X0 = [0; 0; 0];
 al = abs(4*sin(t));
 a = abs(3*sin(t));
 u = [al;a]';
-% x0 = [0;0;0];
+x0 = [0;0;0];
 vl = 30 + al.*t;
 v = 40 + a.*t;
 xl = vl.*t + 0.5*(al.^2);
@@ -28,13 +29,18 @@ C = [-1 0 t_hw; 0 e0 0];
 D = [0 0; 0 0];
 
 sys = ss(A,B,C,D);
+%Yo: open-loop system response
+%Xo: open-loop input
+%t: time vector
 [Yo,t,Xo] = lsim(sys,U,t,X0);
 
-[num1,den] = ss2tf(A,B,C,D,1); % find TF for open loop system
+% find TF for open loop system
+[num1,den] = ss2tf(A,B,C,D,1); 
 [num2,den] = ss2tf(A,B,C,D,2);
 r = roots(den);
-h1 = tf(num1(1,:),den);
-h2 = tf(num2(1,:),den);
+ho1 = tf(num1(1,:),den); 
+ho2 = tf(num2(1,:),den);
+% K = place(A,B,r);
 
 %% Step response for open loop system
 % %Step response of leading car acceleration
@@ -72,15 +78,27 @@ Bc = B;
 Cc = C;
 Dc = D;
 csys = ss(Ac,Bc,Cc,Dc);
+[numc1,denc] = ss2tf(Ac,Bc,Cc,Dc,1); % find TF for open loop system
+[numc2,denc] = ss2tf(Ac,Bc,Cc,Dc,2);
+hc1 = tf(numc1(1,:),denc);
+hc2 = tf(numc2(1,:),denc);
+rc = roots(denc);
+
 Y = C*((-Ac)^(-1))*B;
 [Yc,t,Xc] = lsim(csys,U,t,X0);
 % Uf = -K*X;
+
+%% Plotting
 figure;
-subplot(211);
-plot(t,Xo(:,1),'r',t,Xc(:,1),'g');
+subplot(311);
+plot(t,Xo(:,1),'r',t,Xc(:,1),'b');
 grid;
 legend('Open-loop','Closed-loop');
-subplot(212);
-plot(t,Yo(:,1),'r',t,Yc(:,1),'g');
+subplot(312);
+plot(t,Yo(:,1),'r',t,Yc(:,1),'b');
 grid;
 legend('Open-loop','Closed-loop');
+% subplot(313);
+% plot(t,Yo(:,2),'r',t,Yc(:,2),'b');
+% grid;
+% legend('Open-loop','Closed-loop');
