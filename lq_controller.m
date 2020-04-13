@@ -49,17 +49,11 @@ ho2 = tf(num2(1,:),den);
 % %Step response of host car acceleration
 % step(h2,t);
 
-%%
-% ux = [zeros(1,length(t))];
-% y1u1 = filter(num1(1,:),den,ux);
-% stem(t,y1u1)
-% step(sys,u,t)
-% lsim(sys)
-
+%% Controllability and observability 
 % Check controllability
 Co = ctrb(A,B);
 unco = length(A) - rank(Co); %number of uncontrollable states
-%Check observability
+% Check observability
 Ob = obsv(A,C);
 unob = length(A) - rank(Ob); %number of unobservable states
 
@@ -88,6 +82,13 @@ Y = C*((-Ac)^(-1))*B;
 [Yc,t,Xc] = lsim(csys,U,t,X0);
 % Uf = -K*X;
 
+%% Observer for closed loop
+clc
+obs_eig = 10*eig(Ac); % observer eigenvalues
+L = place(Ac',Cc',obs_eig);
+K_mat = [K(2,1) K(2,2)];
+Ahat = Ac - L'*Cc;
+eig(Ahat)
 %% Plotting
 figure;
 subplot(311);
