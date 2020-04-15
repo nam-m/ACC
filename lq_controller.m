@@ -10,17 +10,17 @@ t_hw = 2; % time head-way between lead and host vehicle
 e0 = 1e-5;
 
 X0 = [0; 0; 0];
-al = abs(4*sin(t));
-a = abs(3*sin(t));
+al = 4*ones(1,N);
+a = 3*ones(1,N);
 u = [al;a]';
-x0 = [0;0;0];
-vl = 30 + al.*t;
-v = 40 + a.*t;
-xl = vl.*t + 0.5*(al.^2);
-x = v.*t + 0.5*(a.^2);
-err = t_hw-(xl-x);
+% x0 = [0;0;0];
+% vl = 30 + al.*t;
+% v = 40 + a.*t;
+% xl = vl.*t + 0.5*(al.^2);
+% x = v.*t + 0.5*(a.^2);
+% err = t_hw-(xl-x);
 
-X = [xl-x; vl; v];
+% X = [xl-x; vl; v];
 U = [al; a];
 %% State-space system
 A = [0 1 -1; 0 0 0; 0 0 0];
@@ -62,8 +62,8 @@ lambda = 1; % tuning parameter
 R =  lambda*[1/e0 0; 0 1];
 G = B*(R^(-1))*B';
 Q = (C')*C;
-% P = Riccati(A,G,Q); % semi-definitive solution
-% K = (R^(-1))*(B')*P; % state feedback gain
+P = Riccati(A,G,Q); % semi-definitive solution
+K = (R^(-1))*(B')*P; % state feedback gain
 K = lqr(sys,Q,R);
 
 %% Closed-loop state feedback system
@@ -82,24 +82,33 @@ Y = C*((-Ac)^(-1))*B;
 [Yc,t,Xc] = lsim(csys,U,t,X0);
 % Uf = -K*X;
 
-%% Observer for closed loop
-clc
+%% Observer for closed loop 
 obs_eig = 10*eig(Ac); % observer eigenvalues
 L = place(Ac',Cc',obs_eig);
+L = L';
 K_mat = [K(2,1) K(2,2)];
-Ahat = Ac - L'*Cc;
-eig(Ahat)
+Ahat = Ac - L*Cc;
+Ar = [Ac -Bc*K; L*Cc Ahat-Bc*K];
+Br = [B;B];
+Cr = [C zeros(2,3)];
+Dr = 0;
+osys = ss(Ar,Br,Cr,Dr);
+[Yob,t,Xob] = lsim(osys,U,t,[X0;X0]);
+eig(Ahat); % check if obs_eig remain
 %% Plotting
+close all
 figure;
-subplot(311);
-plot(t,Xo(:,1),'r',t,Xc(:,1),'b');
+plot(t,Yob(:,1),'r',t,Yc(:,1),'b',t,Yo(:,1),'g');
 grid;
-legend('Open-loop','Closed-loop');
-subplot(312);
-plot(t,Yo(:,1),'r',t,Yc(:,1),'b');
+legend('Observer','Closed-loop','Open-loop');
+xlabel('Time (s)');
+ylabel('Acceleration Unit');
+title('Observer-based vs Closed-loop vs Open-loop system');
+
+figure;
+plot(t,Yob(:,1),'r',t,Yc(:,1),'b');
 grid;
-legend('Open-loop','Closed-loop');
-% subplot(313);
-% plot(t,Yo(:,2),'r',t,Yc(:,2),'b');
-% grid;
-% legend('Open-loop','Closed-loop');
+legend('Observer','Closed-loop');
+xlabel('Time (s)');
+ylabel('Acceleration Unit');
+title('Observer-based vs Closed-loop system');
